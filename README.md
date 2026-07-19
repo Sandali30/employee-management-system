@@ -184,7 +184,7 @@ npm run build
 
 ### Frontend
 
-screenshots/login.png
+![Login Page](screenshots/login.png)
 
 - `/` - Login
 - `/dashboard` - Dashboard
@@ -219,18 +219,17 @@ See [DOCUMENTATION.md](./DOCUMENTATION.md) for full API and feature documentatio
 ![Employee Dashboard](screenshots/employeeDashboard.png)
 
 - Full access to employee management
-screenshots/addEmployee.png
+![Add Employee](screenshots/addEmployee.png)
 - Can delete employees
-screenshots/manageEmployee.png
+![Manage Employees](screenshots/manageEmployee.png)
 - Can assign managers
 - Can view dashboard statistics
 - Can approve or reject leaves
-screenshots/leaveManagement.png
+![Leave Management](screenshots/leaveManagement.png)
 - Can generate payroll
-screenshots/payroll.png
+![Payroll](screenshots/payroll.png)
 - Can view organization hierarchy
-screenshots/organisationHierarchy.png
-
+![Organization Hierarchy](screenshots/organisationHierarchy.png)
 ### HR Manager
 
 - Can create, edit, and view employees
@@ -243,14 +242,14 @@ screenshots/organisationHierarchy.png
 ### Employee
 
 - Can login and view protected pages
-screenshots/viewEmployees.png
+![View Employees](screenshots/viewEmployees.png)
 - Can view and update own profile where allowed
 - Can check in and check out attendance
-screenshots/attendance/png
+![Attendance](screenshots/attendance.png)
 - Can apply for leave
-screenshots/leave.png
+![Leave](screenshots/leave.png)
 - Can view own attendance, leave, and payroll records
-screenshots/profileView.png
+![Profile](screenshots/profileView.png)
 
 ## Assignment Coverage
 
