@@ -216,7 +216,7 @@ See [DOCUMENTATION.md](./DOCUMENTATION.md) for full API and feature documentatio
 ## Role-Based Access
 
 ### Super Admin
-screenshots/employeeDashboard.png
+![Employee Dashboard](screenshots/employeeDashboard.png)
 
 - Full access to employee management
 screenshots/addEmployee.png
