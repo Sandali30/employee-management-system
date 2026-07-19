@@ -1,0 +1,25 @@
+.leave-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.leave-toolbar h1{
+    margin:0;
+    color:#0f2d68;
+}
+
+.apply-btn{
+    border:none;
+    background:#2d63ea;
+    color:white;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.apply-btn:hover{
+    background:#1f4fd3;
+}

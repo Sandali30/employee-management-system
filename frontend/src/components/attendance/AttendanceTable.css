@@ -1,0 +1,51 @@
+.attendance-table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.attendance-table th{
+    background:#0f2d68;
+    color:#fff;
+    padding:14px;
+    text-align:left;
+}
+
+.attendance-table td{
+    padding:14px;
+    border-bottom:1px solid #eee;
+}
+
+.attendance-table tr:hover{
+    background:#f8f9fc;
+}
+
+.status{
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.present{
+    background:#d4edda;
+    color:#155724;
+}
+
+.absent{
+    background:#f8d7da;
+    color:#721c24;
+}
+
+.late{
+    background:#fff3cd;
+    color:#856404;
+}
+
+.half-day{
+    background:#d1ecf1;
+    color:#0c5460;
+}

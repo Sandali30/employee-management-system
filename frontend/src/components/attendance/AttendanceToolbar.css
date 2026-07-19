@@ -1,0 +1,42 @@
+.attendance-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.attendance-toolbar h1{
+    margin:0;
+    color:#0f2d68;
+}
+
+.attendance-buttons{
+    display:flex;
+    gap:12px;
+}
+
+.checkin-btn,
+.checkout-btn{
+    border:none;
+    color:white;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.checkin-btn{
+    background:#28a745;
+}
+
+.checkin-btn:hover{
+    background:#218838;
+}
+
+.checkout-btn{
+    background:#dc3545;
+}
+
+.checkout-btn:hover{
+    background:#c82333;
+}

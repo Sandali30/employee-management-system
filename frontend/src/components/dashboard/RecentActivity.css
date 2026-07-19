@@ -1,0 +1,49 @@
+.activity-card{
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:15px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+}
+
+.activity-card h2{
+
+    margin-bottom:20px;
+
+}
+
+.activity-item{
+
+    padding:15px 0;
+
+    border-bottom:1px solid #ececec;
+
+}
+
+.activity-item:last-child{
+
+    border-bottom:none;
+
+}
+
+.activity-item h4{
+
+    font-size:15px;
+
+    color:#333;
+
+}
+
+.activity-item p{
+
+    color:#777;
+
+    margin-top:5px;
+
+    font-size:13px;
+
+}

@@ -1,0 +1,928 @@
+Employee Management System Documentation
+This document provides complete technical documentation for the Employee Management System developed using React.js, Node.js, Express.js and MongoDB.
+
+
+Project Overview
+The system provides JWT authentication, role-based access control (Super Admin, HR Manager, Employee), employee management, attendance, leave management, payroll, dashboard and organization hierarchy.
+Technology Stack
+Frontend: React.js, React Router, Axios
+Backend: Node.js, Express.js
+Database: MongoDB with Mongoose
+Authentication: JWT + bcryptjs
+Features
+• Secure Login/Logout
+• Protected Routes
+• Role Based Access Control
+• Employee CRUD
+• Dashboard Statistics
+• Attendance Management
+• Leave Management
+• Payroll Management
+• Organization Hierarchy
+• Soft Delete
+• Search, Filter and Pagination
+Architecture
+React Frontend -> Express REST API -> MongoDB.
+JWT token is stored after login and sent in Authorization header.
+Authentication
+Login verifies bcrypt password, issues JWT. Logout clears local storage. Protected APIs require Bearer token.
+Roles
+Super Admin: Full access.
+HR Manager: Manage employees except Super Admin restrictions.
+Employee: Manage own profile, attendance, leave and view own payroll.
+Modules
+Dashboard, Employees, Attendance, Leave, Payroll, Organization, Profile.
+API Summary
+Implemented REST APIs for authentication, dashboard, employees, attendance, leave, payroll and organization hierarchy.
+Validation & Security
+Backend and frontend validation, password hashing, JWT authentication, authorization middleware, soft delete, circular reporting prevention.
+Installation
+1. npm install in backend and frontend.
+2. Configure .env with MONGO_URI, JWT_SECRET and PORT.
+3. Start backend using npm start.
+4. Start frontend using npm start.
+Demo Login
+Use the credentials configured in your MongoDB database. Example:
+Email: admin@gmail.com
+Password: Admin@123
+Update these values if your seeded database uses different credentials.
+Reviewer Guide
+Run backend and frontend, login, verify dashboard, employee CRUD, attendance, leave, organization hierarchy, RBAC and protected routes.
+Limitations
+Bonus features such as Docker, CSV import, unit tests and deployment are not included.
+Future Improvements
+Add Docker, unit tests, CSV import, dashboard charts, email notifications and deployment.
+
+
+## 1. Overview
+
+The Employee Management System is a full-stack web application for managing employees, attendance, leave requests, payroll, and organizational reporting structure. The system uses JWT-based authentication, bcrypt password hashing, MongoDB persistence, and role-based access control.
+
+The application is divided into two main parts:
+
+- `frontend/` - React application
+- `backend/` - Node.js, Express, and MongoDB API
+
+## 2. System Architecture
+
+```text
+React Frontend
+  |
+  | Axios HTTP requests
+  v
+Express REST API
+  |
+  | Mongoose ODM
+  v
+MongoDB Database
+```
+
+Authentication uses JWT tokens. After successful login, the frontend stores the token and attaches it to protected API calls using the Authorization header.
+
+## 3. Authentication
+
+### Login Flow
+
+1. User submits email and password.
+2. Frontend sends credentials to `POST /api/auth/login`.
+3. Backend checks the user by email.
+4. Backend compares the password using bcrypt.
+5. Backend returns a signed JWT and user details.
+6. Frontend stores token and user details in `localStorage`.
+7. Protected routes become accessible.
+
+### Logout Flow
+
+1. Frontend removes token and user data from `localStorage`.
+2. User is redirected to the login page.
+
+### Protected Routes
+
+Frontend protected pages are wrapped with `ProtectedRoute`. Backend protected APIs use the `authenticate` middleware.
+
+## 4. Role-Based Access Control
+
+The system supports three roles:
+
+```text
+Super Admin
+HR Manager
+Employee
+```
+
+### Super Admin Permissions
+
+- View dashboard statistics
+- Create employees
+- Edit employees
+- Soft delete employees
+- Assign reporting managers
+- View organization tree
+- View direct reportees
+- Approve and reject leave requests
+- Generate payroll
+- Mark payroll as paid
+
+### HR Manager Permissions
+
+- View dashboard statistics
+- Create employees
+- Edit employees
+- Soft delete employees, with Super Admin restrictions handled by backend logic
+- View organization tree
+- View direct reportees
+- Approve and reject leave requests
+- Generate payroll
+- Mark payroll as paid
+
+### Employee Permissions
+
+- Login
+- View protected app pages
+- View own profile
+- Update own profile where allowed
+- Check in and check out
+- View own attendance
+- Apply for leave
+- View own leave records
+- View own payroll records
+
+## 5. Database Models
+
+### User
+
+Collection model: `User`
+
+Fields:
+
+- `employeeId` - unique employee code
+- `name` - employee full name
+- `email` - unique login email
+- `password` - hashed password
+- `phone` - phone number
+- `department` - department name
+- `designation` - job title
+- `salary` - salary amount
+- `joiningDate` - date of joining
+- `status` - `Active` or `Inactive`
+- `role` - `Super Admin`, `HR Manager`, or `Employee`
+- `manager` - reporting manager user ID
+- `profileImage` - uploaded profile image path
+- `isDeleted` - soft delete flag
+- `createdAt` and `updatedAt`
+
+Important behavior:
+
+- Passwords are hashed in a Mongoose `pre("save")` hook.
+- Deleted employees remain in MongoDB with `isDeleted: true`.
+
+### Attendance
+
+Collection model: `Attendance`
+
+Fields:
+
+- `employee` - user reference
+- `date` - attendance date
+- `month` - numeric month
+- `year` - numeric year
+- `checkIn` - check-in time
+- `checkOut` - check-out time
+- `workingHours` - calculated hours
+- `status` - `Present`, `Absent`, `Half Day`, or `Late`
+- `remarks`
+- `createdAt` and `updatedAt`
+
+Important behavior:
+
+- One attendance record is allowed per employee per day.
+- Late status is assigned when check-in is after office start time.
+- Half day status can be assigned based on checkout working hours.
+
+### Leave
+
+Collection model: `Leave`
+
+Fields:
+
+- `employee` - user reference
+- `leaveType` - `Casual`, `Sick`, `Earned`, `Maternity`, `Paternity`, or `Loss of Pay`
+- `startDate`
+- `endDate`
+- `totalDays`
+- `reason`
+- `status` - `Pending`, `Approved`, or `Rejected`
+- `approvedBy` - approver user reference
+- `remarks`
+- `createdAt` and `updatedAt`
+
+Important behavior:
+
+- Leave cannot be applied for past dates.
+- End date cannot be before start date.
+- Overlapping pending or approved leave requests are blocked.
+
+### Payroll
+
+Collection model: `Payroll`
+
+Fields:
+
+- `employee` - user reference
+- `month`
+- `year`
+- `basicSalary`
+- `bonus`
+- `deductions`
+- `tax`
+- `netSalary`
+- `paymentStatus` - `Pending` or `Paid`
+- `paymentDate`
+- `createdAt` and `updatedAt`
+
+Important behavior:
+
+- Duplicate payroll records for the same employee, month, and year are blocked.
+- Payroll generation uses attendance data to calculate salary impact.
+
+## 6. API Documentation
+
+Base URL:
+
+```text
+http://localhost:5000/api
+```
+
+Protected endpoints require:
+
+```text
+Authorization: Bearer <token>
+```
+
+### Auth APIs
+
+#### POST `/auth/login`
+
+Logs in a user.
+
+Request:
+
+```json
+{
+  "email": "admin@gmail.com",
+  "password": "Admin@123"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Login Successful",
+  "token": "jwt_token",
+  "user": {
+    "id": "user_id",
+    "name": "Super Admin",
+    "email": "admin@gmail.com",
+    "role": "Super Admin"
+  }
+}
+```
+
+#### GET `/auth/profile`
+
+Returns the logged-in user profile.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee
+
+### Employee APIs
+
+#### POST `/employees`
+
+Creates an employee.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+Request:
+
+```json
+{
+  "employeeId": "EMP002",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "Password@123",
+  "phone": "9876543210",
+  "department": "IT",
+  "designation": "Developer",
+  "salary": 50000,
+  "joiningDate": "2026-07-19",
+  "role": "Employee",
+  "manager": "manager_user_id"
+}
+```
+
+#### GET `/employees`
+
+Returns employees with pagination, search, and filters.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee
+
+Query parameters:
+
+- `page`
+- `limit`
+- `search`
+- `department`
+- `role`
+- `status`
+- `sortBy`
+- `order`
+
+Example:
+
+```text
+GET /api/employees?search=john&department=IT&role=Employee&status=Active
+```
+
+#### GET `/employees/:id`
+
+Returns one employee by ID.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee can view own profile only
+
+#### PUT `/employees/:id`
+
+Updates an employee.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee can update own profile only
+
+#### DELETE `/employees/:id`
+
+Soft deletes an employee.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+#### PUT `/employees/:id/upload-profile`
+
+Uploads a profile image.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee can upload own profile image
+
+Content type:
+
+```text
+multipart/form-data
+```
+
+Field:
+
+```text
+profileImage
+```
+
+#### PATCH `/employees/:id/manager`
+
+Assigns reporting manager.
+
+Access:
+
+- Super Admin
+
+Request:
+
+```json
+{
+  "manager": "manager_user_id"
+}
+```
+
+#### GET `/employees/:id/reportees`
+
+Returns direct reportees for an employee.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+### Dashboard APIs
+
+#### GET `/dashboard/stats`
+
+Returns employee summary statistics.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+Response includes:
+
+- Total employees
+- Active employees
+- Inactive employees
+- HR manager count
+- Recent employees
+
+#### GET `/dashboard/departments`
+
+Returns department-wise employee count.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+#### GET `/dashboard/hierarchy`
+
+Returns manager and employee hierarchy data.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+### Organization APIs
+
+#### GET `/organization/tree`
+
+Returns organization hierarchy tree.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+#### GET `/organization/reportees/:id`
+
+Returns direct reportees.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+#### PATCH `/organization/manager/:id`
+
+Assigns reporting manager.
+
+Access:
+
+- Super Admin
+
+Request:
+
+```json
+{
+  "manager": "manager_user_id"
+}
+```
+
+### Leave APIs
+
+#### POST `/leaves/apply`
+
+Applies for leave.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee
+
+Request:
+
+```json
+{
+  "leaveType": "Casual",
+  "startDate": "2026-07-25",
+  "endDate": "2026-07-26",
+  "reason": "Personal work"
+}
+```
+
+#### GET `/leaves/my-leaves`
+
+Returns logged-in user's leave records.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee
+
+#### GET `/leaves`
+
+Returns all leave requests.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+#### PUT `/leaves/:id/approve`
+
+Approves a leave request.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+Request:
+
+```json
+{
+  "remarks": "Approved"
+}
+```
+
+#### PUT `/leaves/:id/reject`
+
+Rejects a leave request.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+Request:
+
+```json
+{
+  "remarks": "Rejected due to schedule conflict"
+}
+```
+
+### Attendance APIs
+
+#### POST `/attendance/check-in`
+
+Marks attendance check-in for the logged-in user.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee
+
+#### POST `/attendance/check-out`
+
+Marks attendance check-out for the logged-in user.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee
+
+#### GET `/attendance/today`
+
+Returns today's attendance for logged-in user.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee
+
+#### GET `/attendance/my-attendance`
+
+Returns logged-in user's attendance.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee
+
+Query parameters:
+
+- `page`
+- `limit`
+- `startDate`
+- `endDate`
+
+#### GET `/attendance`
+
+Returns all attendance records.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+Query parameters:
+
+- `page`
+- `limit`
+- `status`
+- `employeeId`
+
+#### GET `/attendance/stats`
+
+Returns attendance statistics.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+### Payroll APIs
+
+#### POST `/payroll/generate`
+
+Generates payroll for an employee.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+Request:
+
+```json
+{
+  "employeeId": "employee_user_id",
+  "month": 7,
+  "year": 2026,
+  "bonus": 5000,
+  "deductions": 1000,
+  "tax": 2000
+}
+```
+
+#### GET `/payroll/my-payrolls`
+
+Returns logged-in user's payroll records.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee
+
+#### GET `/payroll`
+
+Returns all payroll records.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+Query parameters:
+
+- `page`
+- `limit`
+- `month`
+- `year`
+- `employeeId`
+
+#### PATCH `/payroll/:id/pay`
+
+Marks payroll as paid.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+#### GET `/payroll/statistics`
+
+Returns payroll statistics.
+
+Access:
+
+- Super Admin
+- HR Manager
+
+#### GET `/payroll/:id`
+
+Returns payroll by ID.
+
+Access:
+
+- Super Admin
+- HR Manager
+- Employee
+
+## 7. Frontend Pages
+
+### Login
+
+Path:
+
+```text
+/
+```
+
+Allows a user to login using email and password.
+
+### Dashboard
+
+Path:
+
+```text
+/dashboard
+```
+
+Shows summary cards and recent employee activity for Super Admin and HR Manager.
+
+### Employees
+
+Path:
+
+```text
+/employees
+```
+
+Allows authorized users to view, create, edit, and soft delete employees.
+
+### Attendance
+
+Path:
+
+```text
+/attendance
+```
+
+Allows users to check in, check out, and view attendance records.
+
+### Leave
+
+Path:
+
+```text
+/leave
+```
+
+Allows users to apply for leave. Super Admin and HR Manager can approve or reject requests.
+
+### Payroll
+
+Path:
+
+```text
+/payroll
+```
+
+Displays payroll records.
+
+### Profile
+
+Path:
+
+```text
+/profile
+```
+
+Displays logged-in user information.
+
+### Organization
+
+Path:
+
+```text
+/organization
+```
+
+Displays organization hierarchy and manager assignment controls for authorized roles.
+
+## 8. Validation Rules
+
+### Employee Validation
+
+- Employee ID is required.
+- Name is required and must be at least 3 characters.
+- Email must be valid.
+- Password must be at least 6 characters on create.
+- Phone is required.
+- Department is required.
+- Designation is required.
+- Salary must be numeric.
+- Joining date is required.
+- Role must be one of `Super Admin`, `HR Manager`, or `Employee`.
+
+### Leave Validation
+
+- Leave type is required.
+- Leave type must be valid.
+- Start date is required and must be valid.
+- End date is required and must be valid.
+- Reason is required.
+- Reason must be between 5 and 500 characters.
+- Past leave dates are blocked by controller logic.
+- Overlapping pending or approved leave dates are blocked.
+
+## 9. Error Handling
+
+Backend validation errors are returned with HTTP 400. Authentication errors return HTTP 401. Unauthorized access returns HTTP 403.
+
+The frontend API client converts backend validation arrays into readable messages so users can understand why a request failed.
+
+## 10. Security
+
+- Passwords are hashed using bcrypt before saving.
+- JWT is used for protected requests.
+- Protected APIs require an Authorization header.
+- Role-based middleware restricts sensitive APIs.
+- Soft delete prevents accidental hard deletion of employee records.
+- Circular manager assignment is prevented.
+
+## 11. Running Locally
+
+Backend:
+
+```bash
+cd backend
+npm install
+npm start
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Frontend URL:
+
+```text
+http://localhost:3000
+```
+
+Backend URL:
+
+```text
+http://localhost:5000
+```
+
+## 12. Testing and Build
+
+Frontend production build:
+
+```bash
+cd frontend
+npm run build
+```
+
+Backend syntax check examples:
+
+```bash
+cd backend
+node --check server.js
+node --check controllers/authController.js
+node --check controllers/employeeController.js
+```
+
+## 13. Current Limitations
+
+- CSV import is not implemented.
+- Dark mode is not implemented.
+- Docker setup is not included.
+- Unit tests are not included.
+- Live deployment is not included.
+- Dashboard charts are not currently rendered, although chart dependencies are installed.
+
+## 14. Future Improvements
+
+- Add CSV employee import.
+- Add advanced dashboard charts.
+- Add automated unit and integration tests.
+- Add Docker and docker-compose setup.
+- Add email notifications.
+- Add password reset workflow.
+- Add deployment configuration.
+- Add richer profile editing with profile image UI.
+
+

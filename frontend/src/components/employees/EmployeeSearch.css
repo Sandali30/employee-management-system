@@ -1,0 +1,18 @@
+.employee-search{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:20px;
+}
+
+.employee-search input{
+    width:320px;
+    padding:12px 18px;
+    border-radius:8px;
+    border:1px solid #ddd;
+    font-size:15px;
+    outline:none;
+}
+
+.employee-search input:focus{
+    border-color:#2d63ea;
+}
